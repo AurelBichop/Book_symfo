@@ -1,6 +1,20 @@
 version: '3'
 
 services:
+  php:
+    image: dunglas/frankenphp
+    # uncomment the following line if you want to use a custom Dockerfile
+    build: .
+    # uncomment the following line if you want to run this in a production environment
+    # restart: always
+
+#    volumes:
+#      - .:/app/
+#      - caddy_data:/data
+#      - caddy_config:/config
+    # comment the following line in production, it allows to have nice human-readable logs in dev
+#    tty: true
+
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
@@ -13,9 +27,12 @@ services:
       - database_data:/var/lib/postgresql/data:rw
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
       # - ./docker/db/data:/var/lib/postgresql/data:rw
+
 ###< doctrine/doctrine-bundle ###
 
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
+  caddy_data:
+  caddy_config:
 ###< doctrine/doctrine-bundle ###
