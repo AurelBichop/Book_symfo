@@ -8,9 +8,14 @@ framework:
         handler_id: '%env(DATABASE_URL)%'
     #esi: true
     #fragments: true
-
+    esi: true
 when@test:
     framework:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+
+when@dev:
+    framework:
+        http_cache: true

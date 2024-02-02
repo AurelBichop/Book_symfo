@@ -2,6 +2,7 @@
 
 namespace App\MessageHandler;
 
+use App\ImageOptimizer;
 use App\Message\CommentMessage;
 use App\Repository\CommentRepository;
 use App\SpamChecker;
@@ -27,6 +28,8 @@ readonly class CommentMessageHandler
         private ?LoggerInterface $logger = null,
         private MailerInterface $mailer,
         #[Autowire('%admin_email%')] private string $adminEmail,
+        private ImageOptimizer $imageOptimizer,
+        #[Autowire('%photo_dir%')] private string $photoDir,
     ) {
     }
 
@@ -53,6 +56,13 @@ readonly class CommentMessageHandler
             $this->entityManager->flush();
             $this->bus->dispatch($message);
 
+        }elseif ($this->commentStateMachine->can($comment, 'optimize')) {
+            if ($comment->getPhotoFilename()) {
+                $this->imageOptimizer->resize($this->photoDir.'/'.$comment->getPhotoFilename());
+            }
+            $this->commentStateMachine->apply($comment, 'optimize');
+            $this->entityManager->flush();
+
         } elseif ($this->commentStateMachine->can($comment, 'publish') || $this->commentStateMachine->can($comment, 'publish_ham')) {
             $this->mailer->send((new NotificationEmail())
                 ->subject('New comment posted')
@@ -61,6 +71,7 @@ readonly class CommentMessageHandler
                 ->to($this->adminEmail)
                 ->context(['comment' => $comment])
             );
+
         } elseif ($this->logger) {
         $this->logger->debug('Dropping comment message', ['comment' => $comment->getId(), 'state' => $comment->getState()]);
     }
