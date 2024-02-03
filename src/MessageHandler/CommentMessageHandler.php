@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
@@ -28,6 +29,7 @@ readonly class CommentMessageHandler
         private ?LoggerInterface $logger = null,
         private MailerInterface $mailer,
         #[Autowire('%admin_email%')] private string $adminEmail,
+        private NotifierInterface $notifier,
         private ImageOptimizer $imageOptimizer,
         #[Autowire('%photo_dir%')] private string $photoDir,
     ) {
@@ -64,13 +66,14 @@ readonly class CommentMessageHandler
             $this->entityManager->flush();
 
         } elseif ($this->commentStateMachine->can($comment, 'publish') || $this->commentStateMachine->can($comment, 'publish_ham')) {
-            $this->mailer->send((new NotificationEmail())
+/*            $this->mailer->send((new NotificationEmail())
                 ->subject('New comment posted')
                 ->htmlTemplate('emails/comment_notification.html.twig')
                 ->from($this->adminEmail)
                 ->to($this->adminEmail)
                 ->context(['comment' => $comment])
-            );
+            );*/
+            $this->notifier->send(new CommentReviewNotification($comment), ...$this->notifier->getAdminRecipients());
 
         } elseif ($this->logger) {
         $this->logger->debug('Dropping comment message', ['comment' => $comment->getId(), 'state' => $comment->getState()]);

@@ -33,6 +33,7 @@ class CommentRepository extends ServiceEntityRepository
     /**
      * @throws NonUniqueResultException
      * @throws NoResultException
+     * @throws Exception
      */
     public function countOldRejected(): int
     {
