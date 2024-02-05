@@ -29,6 +29,15 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 
 ###< doctrine/doctrine-bundle ###
+  redis:
+    image: redis:5-alpine
+    ports: [ "6379" ]
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: [ "5672", "15672" ]
+
 
 volumes:
 ###> doctrine/doctrine-bundle ###

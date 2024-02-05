@@ -5,7 +5,10 @@ framework:
 
     # Note that the session will be started ONLY if you read or write from it.
     session:
-        handler_id: '%env(DATABASE_URL)%'
+        handler_id: '%env(REDIS_URL)%'
+        cookie_secure: auto
+        cookie_samesite: lax
+        storage_factory_id: session.storage.factory.native
     #esi: true
     #fragments: true
     esi: true
